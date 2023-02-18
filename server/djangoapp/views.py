@@ -118,6 +118,29 @@ def get_dealer_reviews(request, dealer_id):
 
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
+def add_review(request, dealer_id, dealer_name):
+    if request.method == "GET":
+        context = {}
+        context['dealer'] = dealer_name
+        cars = CarModel.objects.filter(id=int(dealer_id)).all()
+        context['cars'] = cars
+        return render(request, 'djangoapp/add_review.html',context)
+    if request.method == "POST" and request.user.is_authenticated:
+        car = CarModel.objects.get(pk=int(request.POST['car']))
+        json_payload = {
+            'dealership':dealer_id,
+            'name': request.user.username,
+            'review': request.POST['review'],
+            'purchase': bool(request.POST.get('purchase',False)),
+            'car_make': car.car_make.name,
+            'car_model': car.name,
+            'car_year': car.year.strftime("%Y"),
+            'purchase_date': datetime.strptime(request.POST['date'], "%m/%d/%Y").isoformat()
+        }
+        url= "https://us-south.functions.appdomain.cloud/api/v1/web/80dba8ac-9699-4879-a3ff-49b1c42351e5/review-package/create-review"
+        post_request(url=url, json_payload=json_payload)
+        return redirect("djangoapp:dealer_details", dealer_id=dealer_id, dealer_name=dealer_name)
+    else:
+        return HttpResponse({"message":"Forbidden"})
 # ...
 
