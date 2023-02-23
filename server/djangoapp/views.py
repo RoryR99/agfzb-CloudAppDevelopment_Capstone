@@ -98,7 +98,7 @@ def get_dealerships(request):
         # Get dealers from the URL
         dealerships = get_dealers_from_cf(url)
         # Concat all dealer's short name
-        dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
+        dealer_names = ' '.join([dealer.short_name + str(dealer.id) for dealer in dealerships])
         # Return a list of dealer short name
         return HttpResponse(dealer_names)
 
@@ -127,6 +127,7 @@ def add_review(request, dealer_id, dealer_name):
         return render(request, 'djangoapp/add_review.html',context)
     if request.method == "POST" and request.user.is_authenticated:
         car = CarModel.objects.get(pk=int(request.POST['car']))
+        console.log(car)
         json_payload = {
             'dealership':dealer_id,
             'name': request.user.username,
@@ -137,7 +138,8 @@ def add_review(request, dealer_id, dealer_name):
             'car_year': car.year.strftime("%Y"),
             'purchase_date': datetime.strptime(request.POST['date'], "%m/%d/%Y").isoformat()
         }
-        url= "https://us-south.functions.appdomain.cloud/api/v1/web/80dba8ac-9699-4879-a3ff-49b1c42351e5/review-package/create-review"
+        console.log(json_payload)
+        url= "https://us-south.functions.cloud.ibm.com/api/v1/namespaces/08c5912a-d3c3-4838-9ab3-5be482070298/actions/dealership-package/post-review"
         post_request(url=url, json_payload=json_payload)
         return redirect("djangoapp:dealer_details", dealer_id=dealer_id, dealer_name=dealer_name)
     else:
