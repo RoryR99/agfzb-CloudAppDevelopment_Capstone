@@ -15,7 +15,7 @@
     <h1>
         Add a review about {{ dealer }} Car Dealership
     </h1>
-    <form action="{% url 'djangoapp:add_review' cars.0.dealer_id dealer%}" method="post">
+    <form action="{% url 'djangoapp:add_review' dealerid dealer%}" method="post">
         <div class="form-group">
             <label for="content">Enter the review content:</label>
             <textarea class="form-control" id="content" name="content" rows="2" required></textarea>
