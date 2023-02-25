@@ -70,24 +70,25 @@ def get_dealer_by_id(url, dealerId):
     results = []
     # Call get_request with a URL parameter
     json_result = get_request(url,id=dealerId)
+    print(json_result)
     if json_result:
-        # Get the row list in JSON as dealers
-        dealers = json_result
-        # For each dealer object
-        for dealer in dealers:
+        # Get the row list in JSON as reviews
+        reviews = json_result["data"]["docs"]
+        # For each review object
+        for review in reviews:
             # Get its content in `doc` object
-            dealer_doc = dealer["doc"]
-            # Create a CarDealer object with values in `doc` object
-            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
-                                   id=dealer_doc["_id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
-                                   short_name=dealer_doc["short_name"],
-                                   st=dealer_doc["st"], zip=dealer_doc["zip"])
-            results.append(dealer_obj)
+            # dealer_doc = dealer["doc"]
+            # Create a DealerReview object with values in `doc` object
+            review_obj = DealerReview(dealership=review["dealership"], review=review["review"], car_make=review["car_make"],
+                                   car_model=review["car_model"], car_year=review["car_year"], name=review["name"],
+                                   purchase=review["purchase"],
+                                   purchase_date=review["purchase_date"], id=review["id"],
+                                   sentiment = analyze_review_sentiments(review["review"])
+                                   )                                   
+            results.append(review_obj)
 
     return results
-
-def get_dealers_by_state(url, state):
-    results = []
+    
     # Call get_request with a URL parameter
     json_result = get_request(url,st=state)
     if json_result:

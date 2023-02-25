@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarDealer, CarMake, CarModel, DealerReview
-from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf,post_request, get_dealer_by_id
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -104,17 +104,16 @@ def get_dealerships(request):
 
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
-def get_dealer_reviews(request, dealer_id):
+def get_dealer_reviews(request, dealer_id,dealer_name):
     if request.method == "GET":
+        context = {}
         url = "https://us-south.functions.appdomain.cloud/api/v1/web/08c5912a-d3c3-4838-9ab3-5be482070298/dealership-package/get-review?dealerId="+str(dealer_id)
         # Get dealers from the URL
         reviews = get_dealer_reviews_from_cf(url)
-        print(reviews)
-        
-        # Concat all reviews
-        review_comments  = ' '.join([r.review for r in reviews])
-        # Return a list of reviews
-        return HttpResponse(review_comments)
+       # Get dealers from the URL
+        context['reviews'] = get_dealer_by_id(url,dealer_id)
+        context['dealer'] = dealer_name
+        return render(request,'djangoapp/dealer_details.html', context)
 
 
 # Create a `add_review` view to submit a review
@@ -125,24 +124,27 @@ def add_review(request, dealer_id, dealer_name):
         cars = CarModel.objects.filter(id=int(dealer_id)).all()
         context['cars'] = cars
         return render(request, 'djangoapp/add_review.html',context)
-    if request.method == "POST" and request.user.is_authenticated:
-        car = CarModel.objects.get(pk=int(request.POST['car']))
-        console.log(car)
+    if request.method == "POST":
+        
         json_payload = {
-            'dealership':dealer_id,
-            'name': request.user.username,
-            'review': request.POST['review'],
-            'purchase': bool(request.POST.get('purchase',False)),
-            'car_make': car.car_make.name,
-            'car_model': car.name,
-            'car_year': car.year.strftime("%Y"),
-            'purchase_date': datetime.strptime(request.POST['date'], "%m/%d/%Y").isoformat()
-        }
-        console.log(json_payload)
-        url= "https://us-south.functions.cloud.ibm.com/api/v1/namespaces/08c5912a-d3c3-4838-9ab3-5be482070298/actions/dealership-package/post-review"
+"review": 
+    {
+        "id": 1117,
+        "name": "abcdef",
+        "dealership": 15,
+        "review": "not bad service!",
+        "purchase": False,
+        "another": "field",
+        "purchase_date": "01/16/2023",
+        "car_make": "Audi",
+        "car_model": "Car",
+        "car_year": 2022
+    }
+}
+        url= "https://us-south.functions.appdomain.cloud/api/v1/web/08c5912a-d3c3-4838-9ab3-5be482070298/dealership-package/post-review"
         post_request(url=url, json_payload=json_payload)
-        return redirect("djangoapp:dealer_details", dealer_id=dealer_id, dealer_name=dealer_name)
+        
+        return redirect("djangoapp:dealer_reviews", dealer_id=dealer_id, dealer_name=dealer_name)
     else:
         return HttpResponse({"message":"Forbidden"})
-# ...
 

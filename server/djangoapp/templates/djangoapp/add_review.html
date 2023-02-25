@@ -37,6 +37,7 @@
             <label for="purchasedate">Select your Purchase Date:</label>
             <input class="date-own form-control" type="text" style="width:15%" name="purchasedate" id="purchasedate">
         </div>
+        {% csrf_token %}
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     </body>
