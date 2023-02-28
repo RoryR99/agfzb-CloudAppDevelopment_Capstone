@@ -95,7 +95,7 @@ def registration_request(request):
 def get_dealerships(request):
     if request.method == "GET":
         context = {}
-        url = "https://us-south.functions.appdomain.cloud/api/v1/web/08c5912a-d3c3-4838-9ab3-5be482070298/dealership-package/get-dealership"
+        url = "https://us-south.functions.appdomain.cloud/api/v1/web/80dba8ac-9699-4879-a3ff-49b1c42351e5/dealership-package/get-dealership.json"
         # Get dealers from the URL
         context["dealers"] = get_dealers_from_cf(url)
         return render(request,'djangoapp/index.html', context)
